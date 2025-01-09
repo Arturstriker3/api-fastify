@@ -16,7 +16,7 @@ export class UserController {
 
       const parsedBody = userSchema.parse(body);
 
-      const userData: CreateUserDTO = userSchema.parse(body) as CreateUserDTO;
+      const userData: CreateUserDTO = parsedBody;
 
       const user = await UserService.createUser(userData);
 
