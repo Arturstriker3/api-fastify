@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { fastify } from 'fastify';
 import { fastifyCors } from '@fastify/cors';
 import { corsOptions } from './middlewares/cors';
@@ -32,24 +33,24 @@ app.register(fastifySwaggerUi, {
 app.register(routes, { prefix: `${envConfig.getApiPrefix()}` });
 
 const startServer = async () => {
-    try {
-      await AppDataSource.initialize();
-      console.log("Database connected successfully!");
-  
-      await app.listen({ port: Number(envConfig.getPort()) });
-  
-      const address = app.server.address();
-      if (address && typeof address !== 'string') {
-        const docsUrl = `${address.port}/docs`;
-        console.log(`Server listening at ${address.port}`);
-        console.log(`API Documentation available at ${docsUrl}`);
-      } else {
-        throw new Error("Server address is not available.");
+  try {
+    await AppDataSource.initialize();
+    console.log("Database connected successfully!");
+
+    app.listen({ port: Number(envConfig.getPort()) }, (err, address) => {
+      if (err) {
+        console.error(err);
+        process.exit(1);
       }
-    } catch (error) {
-      console.error("Error connecting to the database:", error);
-      process.exit(1);
-    }
-  };
+
+      const docsUrl = `${address}/docs`;
+      console.log(`Server listening at ${address}`);
+      console.log(`API Documentation available at ${docsUrl}`);
+    });
+  } catch (error) {
+    console.error("Error connecting to the database:", error);
+    process.exit(1);
+  }
+};
 
 startServer();

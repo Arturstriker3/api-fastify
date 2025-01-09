@@ -1,25 +1,34 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from "typeorm";
 
 @Entity("users")
 export class User {
     @PrimaryGeneratedColumn("uuid")
-    id!: string
+    id!: string;
 
-    @Column()
-    name!: string
+    @Column("varchar")
+    name: string;
 
-    @Column({ unique: true })
-    email!: string
+    @Column("varchar", { unique: true })
+    email: string;
 
-    @Column()
-    password!: string
+    @Column("varchar")
+    password: string;
 
-    @CreateDateColumn()
-    created_at!: Date
+    @CreateDateColumn({ type: "timestamp" })
+    created_at: Date;
 
-    @UpdateDateColumn()
-    updated_at!: Date
+    @UpdateDateColumn({ type: "timestamp" })
+    updated_at: Date;
 
-    @DeleteDateColumn()
-    deleted_at!: Date
+    @DeleteDateColumn({ type: "timestamp" })
+    deleted_at: Date;
+
+    constructor() {
+        this.name = "";
+        this.email = "";
+        this.password = "";
+        this.created_at = new Date();
+        this.updated_at = new Date();
+        this.deleted_at = new Date();
+    }
 }
