@@ -4,20 +4,20 @@ import fastifySwaggerUi from '@fastify/swagger-ui';
 import { envConfig } from './envs';
 import { jsonSchemaTransform } from 'fastify-type-provider-zod';
 
-const swaggerConfig: FastifyPluginAsync = async (app) => {
-  app.register(fastifySwagger, {
-    openapi: {
-      info: {
-        title: `${envConfig.getServerName()} - API Documentation`,
-        version: `${envConfig.getServerVersion()}`,
-      },
-    },
-    transform: jsonSchemaTransform,
-  });
 
-  app.register(fastifySwaggerUi, {
-    routePrefix: '/docs',
-  });
-};
+app.register(fastifySwagger, {
+  openapi: {
+    info: {
+      title: `${envConfig.getServerName()} - API Documentation`,
+      version: `${envConfig.getServerVersion()}`,
+    },
+  },
+  transform: jsonSchemaTransform,
+});
+
+app.register(fastifySwaggerUi, {
+  routePrefix: '/docs',
+});
+
 
 export default swaggerConfig;

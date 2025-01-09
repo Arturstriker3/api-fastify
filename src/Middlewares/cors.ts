@@ -1,13 +1,12 @@
 import { FastifyCorsOptions } from '@fastify/cors';
-import { FastifyErrorCodes } from 'fastify';
 
 export const corsOptions: FastifyCorsOptions = {
     origin: (origin, callback) => {
-      const allowedOrigins = ['*'];
+      const allowedOrigins = ['https://www.google.com'];
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        throw FastifyErrorCodes.
+        callback(new Error('Not allowed by CORS'), false);
       }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

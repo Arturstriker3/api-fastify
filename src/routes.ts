@@ -3,22 +3,27 @@ import { FastifyTypedIntance } from './types/fastify-types';
 
 export async function routes(app: FastifyTypedIntance): Promise<void> {
     app.get('/users', {
-        tags: ['users'],
-        description: 'List users',
+        schema: {
+            tags: ['users'],
+            description: 'List users',
+        },
     }, () => {
-        return [];
+        return [
+            { name: 'John', age: 30 },
+            { name: 'Jane', age: 25 },
+        ];
     });
 
     app.post('/users', {
-        tags: ['users'],
-        description: 'Create a new user',
         schema: {
+            tags: ['users'],
+            description: 'Create a new user',
             body: z.object({
                 name: z.string(),
                 age: z.number(),
             }),
         },
-    }, (req, reply) => {
+    }, (req) => {
         return req.body;
     });
 }
