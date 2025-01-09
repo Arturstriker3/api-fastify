@@ -1,12 +1,13 @@
 import { fastify } from 'fastify';
 import { fastifyCors } from '@fastify/cors';
-import { corsOptions } from './Middlewares/cors';
+import { corsOptions } from './middlewares/cors';
 import { validatorCompiler, serializerCompiler, ZodTypeProvider, jsonSchemaTransform } from 'fastify-type-provider-zod';
-import { envConfig } from './Helpers/envs';
-import rootRoute from './Helpers/rootRoute';
+import { envConfig } from './helpers/envs';
+import rootRoute from './helpers/rootRoute';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
 import { routes } from './routes';
+import { AppDataSource } from './database/data-source';
 
 const app = fastify().withTypeProvider<ZodTypeProvider>();
 app.setValidatorCompiler(validatorCompiler);
@@ -30,13 +31,25 @@ app.register(fastifySwaggerUi, {
 
 app.register(routes, { prefix: `${envConfig.getApiPrefix()}` });
 
-app.listen({ port: Number(envConfig.getPort()) }, (err, address) => {
-    if (err) {
-      console.error(err);
+const startServer = async () => {
+    try {
+      await AppDataSource.initialize();
+      console.log("Database connected successfully!");
+  
+      await app.listen({ port: Number(envConfig.getPort()) });
+  
+      const address = app.server.address();
+      if (address && typeof address !== 'string') {
+        const docsUrl = `${address.port}/docs`;
+        console.log(`Server listening at ${address.port}`);
+        console.log(`API Documentation available at ${docsUrl}`);
+      } else {
+        throw new Error("Server address is not available.");
+      }
+    } catch (error) {
+      console.error("Error connecting to the database:", error);
       process.exit(1);
     }
-  
-    const docsUrl = `${address}/docs`;
-    console.log(`Server listening at ${address}`);
-    console.log(`API Documentation available at ${docsUrl}`);
-  });
+  };
+
+startServer();
