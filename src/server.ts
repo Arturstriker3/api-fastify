@@ -27,15 +27,17 @@ app.register(fastifySwagger, {
 });
 
 app.register(fastifySwaggerUi, {
-  routePrefix: "/docs",
+  routePrefix: `${envConfig.getApiPrefix()}/docs`,
 });
 
-app.register(routes, { prefix: `${envConfig.getApiPrefix()}` });
+app.register(routes);
 
 const startServer = async () => {
   try {
     await AppDataSource.initialize();
     console.log("Database connected successfully!");
+
+    const apiUrl = `${envConfig.getApiPrefix()}`;
 
     app.listen({ port: Number(envConfig.getPort()) }, (err, address) => {
       if (err) {
@@ -43,7 +45,7 @@ const startServer = async () => {
         process.exit(1);
       }
 
-      const docsUrl = `${address}/docs`;
+      const docsUrl = `${address}${apiUrl}/docs`;
       console.log(`Server listening at ${address}`);
       console.log(`API Documentation available at ${docsUrl}`);
     });
