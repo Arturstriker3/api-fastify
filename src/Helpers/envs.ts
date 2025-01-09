@@ -17,12 +17,17 @@ class EnvConfig implements IEnvConfig {
 
   public getServerName(): string {
     const defaultServerName = "Fastify";
-    return process.env.SERVER_NAME || defaultServerName;
+    return process.env.API_NAME || defaultServerName;
   }
 
   public getServerVersion(): string {
     const defaultServerVersion = "1.0.0";
-    return process.env.SERVER_VERSION || defaultServerVersion;
+    return process.env.API_VERSION || defaultServerVersion;
+  }
+
+  public getApiPrefix(): string {
+    const defaultApiPrefix = "/api/v1";
+    return process.env.API_PREFIX || defaultApiPrefix;
   }
 }
 
