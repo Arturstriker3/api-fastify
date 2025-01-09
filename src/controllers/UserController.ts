@@ -1,61 +1,45 @@
-import { FastifyInstance } from "fastify";
-import { UserService } from "../services/UserService";
-import { User } from "../entities/User";
+import { FastifyRequest, FastifyReply } from 'fastify';
+import { z } from 'zod';
+import { UserService } from '../services/UserService';
 
-const userService = new UserService();
-
-export async function userController(fastify: FastifyInstance) {
-  fastify.post("/login", async (request, reply) => {
-    const { email, password } = request.body as { email: string; password: string };
+export class UserController {
+  // Método para criar um novo usuário
+  static async createUser(req: FastifyRequest, reply: FastifyReply) {
     try {
-      const result = await userService.login(email, password);
-      return reply.send(result);
-    } catch (error) {
-      return reply.status(400).send({ error: error.message });
-    }
-  });
+      const body = req.body;
 
-  fastify.post("/register", async (request, reply) => {
-    const { name, email, password } = request.body as { name: string; email: string; password: string };
+      // Validação com Zod diretamente no controller
+      const userSchema = z.object({
+        name: z.string().min(1, 'Name is required'),
+        email: z.string().email('Invalid email format'),
+        password: z.string().min(6, 'Password must be at least 6 characters'),
+      });
+
+      // Valida os dados recebidos
+      userSchema.parse(body);
+
+      // Chama o service para criar o usuário
+      const user = await UserService.createUser(body);
+
+      return reply.code(201).send(user); // Retorna o usuário criado
+    } catch (error) {
+      console.error('Error creating user:', error);
+      return reply.code(400).send({ message: error.message });
+    }
+  }
+
+  // Método para verificar o token
+  static async verifyToken(req: FastifyRequest, reply: FastifyReply) {
     try {
-      const newUser = await userService.register(name, email, password);
-      return reply.send(newUser);
-    } catch (error) {
-      return reply.status(400).send({ error: error.message });
-    }
-  });
+      const token = req.headers.authorization;
 
-  fastify.get("/verify-token", async (request, reply) => {
-    const token = request.headers["authorization"]?.split(" ")[1];
-    if (!token) {
-      return reply.status(400).send({ error: "Token não fornecido" });
-    }
+      // Valida o token no service
+      const result = await UserService.verifyToken(token);
 
-    try {
-      const decoded = userService.verifyToken(token);
-      return reply.send({ decoded });
+      return reply.send(result); // Retorna a resposta
     } catch (error) {
-      return reply.status(400).send({ error: error.message });
+      console.error('Error verifying token:', error);
+      return reply.code(400).send({ message: error.message });
     }
-  });
-
-  fastify.put("/update", async (request, reply) => {
-    const { userId, email, password } = request.body as { userId: string; email?: string; password?: string };
-    try {
-      const updatedUser = await userService.update(userId, email, password);
-      return reply.send(updatedUser);
-    } catch (error) {
-      return reply.status(400).send({ error: error.message });
-    }
-  });
-
-  fastify.delete("/delete", async (request, reply) => {
-    const { userId } = request.body as { userId: string };
-    try {
-      await userService.softDelete(userId);
-      return reply.send({ message: "Usuário deletado logicamente" });
-    } catch (error) {
-      return reply.status(400).send({ error: error.message });
-    }
-  });
+  }
 }

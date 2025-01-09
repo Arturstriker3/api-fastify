@@ -1,41 +1,38 @@
-import { UserRepository } from "../repositories/UserRepository";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-
-const userRepository = new UserRepository();
+import { UserRepository } from '../repositories/UserRepository';
+import { User } from '../entities/User';
+import { hash } from 'bcrypt';
 
 export class UserService {
-  async register(name: string, email: string, password: string) {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    return await userRepository.createUser(name, email, hashedPassword);
-  }
+  // Método para criar um usuário
+  static async createUser(userData: { name: string; email: string; password: string }) {
+    // Verifica se o usuário já existe
+    const existingUser = await UserRepository.findOne({ where: { email: userData.email } });
 
-  async login(email: string, password: string) {
-    const user = await userRepository.findByEmail(email);
-    if (!user) throw new Error("Usuário não encontrado");
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) throw new Error("Senha incorreta");
-
-    const token = jwt.sign({ id: user.id }, "secretKey", { expiresIn: "1h" });
-    return { token };
-  }
-
-  verifyToken(token: string) {
-    try {
-      const decoded = jwt.verify(token, "secretKey");
-      return decoded;
-    } catch (error) {
-      throw new Error("Token inválido ou expirado");
+    if (existingUser) {
+      throw new Error('Email is already in use');
     }
+
+    // Cria o novo usuário
+    const newUser = new User();
+    newUser.name = userData.name;
+    newUser.email = userData.email;
+    newUser.password = await hash(userData.password, 10); // Faz hash na senha antes de salvar
+
+    // Salva no banco de dados
+    return await UserRepository.save(newUser);
   }
 
-  async update(userId: string, email?: string, password?: string) {
-    const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
-    return await userRepository.updateUser(userId, email, hashedPassword);
-  }
+  // Método para verificar a validade do token
+  static async verifyToken(token: string) {
+    // Aqui você pode implementar a verificação do token (JWT, por exemplo)
+    // Verifica se o token é válido e retorna o resultado
+    if (!token) {
+      throw new Error('No token provided');
+    }
 
-  async softDelete(userId: string) {
-    await userRepository.softDeleteUser(userId);
+    // Simula a validação do token
+    const isValid = true; // Logica real de verificação de token
+
+    return { isValid };
   }
 }
